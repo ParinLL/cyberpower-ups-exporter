@@ -5,10 +5,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    # If you SNMP_TARGET is the conainter host, you may want to set host network
+    # network_mode: "host"
     ports:
       - "9100:9100"
     environment:
-      - SNMP_TARGET=192.168.1.1
+      - SNMP_TARGET=127.0.0.1
       - SNMP_PORT=161
       - SNMP_COMMUNITY=public
       - SERVER_PORT=9100
