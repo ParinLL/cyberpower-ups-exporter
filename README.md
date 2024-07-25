@@ -61,7 +61,7 @@ To build and run the container:
 1. Adjust the environment variables in docker-compose.yml to match your SNMP configuration.
 2. Run:
 ```
-docker-compose up --build
+docker compose up --build
 ```
 3. The exporter will be accessible at http://localhost:9100/metrics
 
