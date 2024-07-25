@@ -1,4 +1,4 @@
-module ppb-exporter
+module github.com/ParinLL/cyberpower-ups-exporter
 
 go 1.21.5
 

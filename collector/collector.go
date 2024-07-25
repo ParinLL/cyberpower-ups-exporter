@@ -1,26 +1,29 @@
-package main
+package collector
 
 import (
-	"log"
-	"net/http"
-	"os"
+	"errors"
 	"strconv"
 	"time"
 
 	"github.com/gosnmp/gosnmp"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
 var (
-	snmpTarget string
-	snmpPort   = uint16(161)
-	community  string
-	logger     *zap.Logger
+	ErrNoSNMPTarget = errors.New("SNMP_TARGET environment variable is not set")
 )
 
-type upsCollector struct {
+type Config struct {
+	SNMPTarget string
+	SNMPPort   string
+	Community  string
+}
+
+type UPSCollector struct {
+	config *Config
+	logger *zap.Logger
+
 	batteryStatus                *prometheus.Desc
 	batteryReplaceIndicator      *prometheus.Desc
 	inputLineFailCause           *prometheus.Desc
@@ -40,8 +43,11 @@ type upsCollector struct {
 	environmentSensorHumidity    *prometheus.Desc
 }
 
-func newUPSCollector() *upsCollector {
-	return &upsCollector{
+func NewUPSCollector(config *Config, logger *zap.Logger) (*UPSCollector, error) {
+	return &UPSCollector{
+		config: config,
+		logger: logger,
+
 		batteryStatus: prometheus.NewDesc(
 			"ups_battery_status",
 			"UPS Battery Status",
@@ -127,41 +133,52 @@ func newUPSCollector() *upsCollector {
 			"UPS Environment Sensor Humidity",
 			nil, nil,
 		),
+	}, nil
+}
+
+func (c *UPSCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.batteryStatus
+	ch <- c.batteryReplaceIndicator
+	ch <- c.batteryStatus
+	ch <- c.batteryReplaceIndicator
+	ch <- c.inputLineFailCause
+	ch <- c.inputStatus
+	ch <- c.outputStatus
+	ch <- c.batteryCapacity
+	ch <- c.outputCurrent
+	ch <- c.batteryVoltage
+	ch <- c.inputLineVoltage
+	ch <- c.outputVoltage
+	ch <- c.outputLoad
+	ch <- c.batteryTemperature
+	ch <- c.environmentSensorTemperature
+	ch <- c.batteryRuntime
+	ch <- c.inputFrequency
+	ch <- c.outputFrequency
+	ch <- c.environmentSensorHumidity
+}
+
+func must(i int, err error) int {
+	if err != nil {
+		panic(err)
 	}
+	return i
 }
 
-func (collector *upsCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- collector.batteryStatus
-	ch <- collector.batteryReplaceIndicator
-	ch <- collector.inputLineFailCause
-	ch <- collector.inputStatus
-	ch <- collector.outputStatus
-	ch <- collector.batteryCapacity
-	ch <- collector.outputCurrent
-	ch <- collector.batteryVoltage
-	ch <- collector.inputLineVoltage
-	ch <- collector.outputVoltage
-	ch <- collector.outputLoad
-	ch <- collector.batteryTemperature
-	ch <- collector.environmentSensorTemperature
-	ch <- collector.batteryRuntime
-	ch <- collector.inputFrequency
-	ch <- collector.outputFrequency
-	ch <- collector.environmentSensorHumidity
-}
-
-func (collector *upsCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *UPSCollector) Collect(ch chan<- prometheus.Metric) {
+	c.logger.Info("Starting metrics collection")
+	start := time.Now()
 	snmp := &gosnmp.GoSNMP{
-		Target:    snmpTarget,
-		Port:      snmpPort,
-		Community: community,
+		Target:    c.config.SNMPTarget,
+		Port:      uint16(must(strconv.Atoi(c.config.SNMPPort))),
+		Community: c.config.Community,
 		Version:   gosnmp.Version1,
 		Timeout:   time.Duration(2) * time.Second,
-		Retries:   1,
 	}
+
 	err := snmp.Connect()
 	if err != nil {
-		log.Println("Connect error:", err)
+		c.logger.Error("Connect error", zap.Error(err))
 		return
 	}
 	defer snmp.Conn.Close()
@@ -188,7 +205,7 @@ func (collector *upsCollector) Collect(ch chan<- prometheus.Metric) {
 
 	result, err := snmp.Get(oids)
 	if err != nil {
-		log.Println("Get error:", err)
+		c.logger.Error("Get error", zap.Error(err))
 		return
 	}
 
@@ -205,108 +222,41 @@ func (collector *upsCollector) Collect(ch chan<- prometheus.Metric) {
 
 		switch variable.Name {
 		case ".1.3.6.1.4.1.3808.1.1.1.2.1.1.0":
-			ch <- prometheus.MustNewConstMetric(collector.batteryStatus, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.batteryStatus, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.1.2.2.5.0":
-			ch <- prometheus.MustNewConstMetric(collector.batteryReplaceIndicator, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.batteryReplaceIndicator, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.1.3.2.5.0":
-			ch <- prometheus.MustNewConstMetric(collector.inputLineFailCause, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.inputLineFailCause, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.1.3.2.6.0":
-			ch <- prometheus.MustNewConstMetric(collector.inputStatus, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.inputStatus, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.1.4.1.1.0":
-			ch <- prometheus.MustNewConstMetric(collector.outputStatus, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.outputStatus, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.1.2.2.1.0":
-			ch <- prometheus.MustNewConstMetric(collector.batteryCapacity, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.batteryCapacity, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.1.4.2.4.0":
-			ch <- prometheus.MustNewConstMetric(collector.outputCurrent, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.outputCurrent, prometheus.GaugeValue, value/10)
 		case ".1.3.6.1.4.1.3808.1.1.1.2.2.2.0":
-			ch <- prometheus.MustNewConstMetric(collector.batteryVoltage, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.batteryVoltage, prometheus.GaugeValue, value/10)
 		case ".1.3.6.1.4.1.3808.1.1.1.3.2.1.0":
-			ch <- prometheus.MustNewConstMetric(collector.inputLineVoltage, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.inputLineVoltage, prometheus.GaugeValue, value/10)
 		case ".1.3.6.1.4.1.3808.1.1.1.4.2.1.0":
-			ch <- prometheus.MustNewConstMetric(collector.outputVoltage, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.outputVoltage, prometheus.GaugeValue, value/10)
 		case ".1.3.6.1.4.1.3808.1.1.1.4.2.3.0":
-			ch <- prometheus.MustNewConstMetric(collector.outputLoad, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.outputLoad, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.1.2.2.3.0":
-			ch <- prometheus.MustNewConstMetric(collector.batteryTemperature, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.batteryTemperature, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.4.2.1.0":
-			ch <- prometheus.MustNewConstMetric(collector.environmentSensorTemperature, prometheus.GaugeValue, (value-32)*5/9/10)
+			ch <- prometheus.MustNewConstMetric(c.environmentSensorTemperature, prometheus.GaugeValue, (value-32)*5/9/10)
 		case ".1.3.6.1.4.1.3808.1.1.1.2.2.4.0":
-			ch <- prometheus.MustNewConstMetric(collector.batteryRuntime, prometheus.GaugeValue, value/6000)
+			ch <- prometheus.MustNewConstMetric(c.batteryRuntime, prometheus.GaugeValue, value/6000)
 		case ".1.3.6.1.4.1.3808.1.1.1.3.2.4.0":
-			ch <- prometheus.MustNewConstMetric(collector.inputFrequency, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.inputFrequency, prometheus.GaugeValue, value/10)
 		case ".1.3.6.1.4.1.3808.1.1.1.4.2.2.0":
-			ch <- prometheus.MustNewConstMetric(collector.outputFrequency, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.outputFrequency, prometheus.GaugeValue, value/10)
 		case ".1.3.6.1.4.1.3808.1.1.4.3.1.0":
-			ch <- prometheus.MustNewConstMetric(collector.environmentSensorHumidity, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.environmentSensorHumidity, prometheus.GaugeValue, value)
 		}
 	}
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		// Create a custom ResponseWriter to capture the status code
-		crw := &customResponseWriter{ResponseWriter: w}
-		next.ServeHTTP(crw, r)
-
-		duration := time.Since(start)
-
-		// Log the request details
-		logger.Info("HTTP request",
-			zap.String("method", r.Method),
-			zap.String("path", r.URL.Path),
-			zap.Int("status", crw.status),
-			zap.Duration("duration", duration),
-			zap.String("ip", r.RemoteAddr),
-		)
-	})
-}
-
-type customResponseWriter struct {
-	http.ResponseWriter
-	status int
-}
-
-func (crw *customResponseWriter) WriteHeader(code int) {
-	crw.status = code
-	crw.ResponseWriter.WriteHeader(code)
-}
-
-func main() {
-	var err error
-	logger, err = zap.NewProduction()
-	if err != nil {
-		log.Fatalf("can't initialize zap logger: %v", err)
-	}
-	defer logger.Sync()
-
-	snmpTarget = os.Getenv("SNMP_TARGET")
-	if snmpTarget == "" {
-		logger.Fatal("SNMP_TARGET environment variable is not set")
-	}
-
-	if port := os.Getenv("SNMP_PORT"); port != "" {
-		if p, err := strconv.ParseUint(port, 10, 16); err == nil {
-			snmpPort = uint16(p)
-		} else {
-			logger.Warn("Invalid SNMP_PORT, using default", zap.Uint16("port", snmpPort))
-		}
-	}
-
-	community = os.Getenv("SNMP_COMMUNITY")
-	if community == "" {
-		community = "public"
-	}
-
-	collector := newUPSCollector()
-	prometheus.MustRegister(collector)
-
-	http.Handle("/metrics", loggingMiddleware(promhttp.Handler()))
-
-	addr := ":9100"
-	logger.Info("Beginning to serve on port " + addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		logger.Fatal("Error starting HTTP server", zap.Error(err))
-	}
+	duration := time.Since(start)
+	c.logger.Info("Finished metrics collection", zap.Duration("duration", duration))
 }
