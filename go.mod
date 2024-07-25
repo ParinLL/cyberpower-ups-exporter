@@ -1,6 +1,6 @@
 module github.com/ParinLL/cyberpower-ups-exporter
 
-go 1.21.5
+go 1.22.5
 
 require (
 	github.com/gosnmp/gosnmp v1.37.0
