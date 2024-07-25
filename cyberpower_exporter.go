@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,12 +10,14 @@ import (
 	"github.com/gosnmp/gosnmp"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/zap"
 )
 
 var (
 	snmpTarget string
-	snmpPort   = uint16(161) // Standard SNMP port
-	community  = "public"    // Replace with your SNMP community string
+	snmpPort   = uint16(161)
+	community  string
+	logger     *zap.Logger
 )
 
 type upsCollector struct {
@@ -241,30 +242,71 @@ func (collector *upsCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		// Create a custom ResponseWriter to capture the status code
+		crw := &customResponseWriter{ResponseWriter: w}
+		next.ServeHTTP(crw, r)
+
+		duration := time.Since(start)
+
+		// Log the request details
+		logger.Info("HTTP request",
+			zap.String("method", r.Method),
+			zap.String("path", r.URL.Path),
+			zap.Int("status", crw.status),
+			zap.Duration("duration", duration),
+			zap.String("ip", r.RemoteAddr),
+		)
+	})
+}
+
+type customResponseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (crw *customResponseWriter) WriteHeader(code int) {
+	crw.status = code
+	crw.ResponseWriter.WriteHeader(code)
+}
+
 func main() {
-	// Read SNMP target from environment variable
+	var err error
+	logger, err = zap.NewProduction()
+	if err != nil {
+		log.Fatalf("can't initialize zap logger: %v", err)
+	}
+	defer logger.Sync()
+
 	snmpTarget = os.Getenv("SNMP_TARGET")
 	if snmpTarget == "" {
-		log.Fatal("SNMP_TARGET environment variable is not set")
+		logger.Fatal("SNMP_TARGET environment variable is not set")
 	}
 
-	// Optionally, you can also read SNMP port and community from environment variables
 	if port := os.Getenv("SNMP_PORT"); port != "" {
 		if p, err := strconv.ParseUint(port, 10, 16); err == nil {
 			snmpPort = uint16(p)
 		} else {
-			log.Printf("Invalid SNMP_PORT, using default: %d", snmpPort)
+			logger.Warn("Invalid SNMP_PORT, using default", zap.Uint16("port", snmpPort))
 		}
 	}
 
-	if comm := os.Getenv("SNMP_COMMUNITY"); comm != "" {
-		community = comm
+	community = os.Getenv("SNMP_COMMUNITY")
+	if community == "" {
+		community = "public"
 	}
 
 	collector := newUPSCollector()
 	prometheus.MustRegister(collector)
 
-	http.Handle("/metrics", promhttp.Handler())
-	fmt.Printf("Beginning to serve on port :9100, SNMP target: %s\n", snmpTarget)
-	log.Fatal(http.ListenAndServe(":9100", nil))
+	http.Handle("/metrics", loggingMiddleware(promhttp.Handler()))
+
+	addr := ":9100"
+	logger.Info("Beginning to serve on port " + addr)
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		logger.Fatal("Error starting HTTP server", zap.Error(err))
+	}
 }

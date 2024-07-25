@@ -1,17 +1,18 @@
 # CyberPower UPS SNMP Exporter for Prometheus
 
-This exporter collects SNMP data from CyberPower UPS devices and exposes it as Prometheus metrics. It's designed to work with CyberPower PowerPanel Business on Linux with SNMPv1 enabled.
+This exporter collects SNMP data from CyberPower PowerPanel Business server and exposes it as Prometheus metrics. It's designed to work with CyberPower PowerPanel Business on Linux with SNMPv1 enabled.
 
 ## Prerequisites
 
 - Go 1.15 or higher
 - CyberPower PowerPanel Business installed on a Linux system
-- SNMPv1 enabled on the CyberPower UPS
+- SNMPv1 enabled on the CyberPower PowerPanel Business server
+- At least one UPS connected to the PowerPanel Business server via USB or serial console
 
 ## Installation
 
 1. Clone this repository:
-git clone https://github.com/ParinLL/cyberpower-ups-exporter.git
+git clone https://github.com/yourusername/cyberpower-ups-exporter.git
 Copy
 2. Navigate to the project directory:
 cd cyberpower-ups-exporter
@@ -23,15 +24,25 @@ Copy
 
 Set the following environment variables:
 
-- `SNMP_TARGET`: IP address of your CyberPower UPS
+- `SNMP_TARGET`: IP address of your CyberPower PowerPanel Business server
 - `SNMP_PORT`: SNMP port (default is 161)
 - `SNMP_COMMUNITY`: SNMP community string (default is "public")
 
 ## Usage
 
-Run the exporter:
-./cyberpower_exporter
-Copy
+You can run the exporter in two ways:
+
+1. Set environment variables before running:
+```bash
+export SNMP_TARGET=192.168.1.1
+export SNMP_PORT=161
+export SNMP_COMMUNITY=public
+go run cyberpower_exporter.go
+```
+2. Set environment variables inline:
+```bash
+SNMP_TARGET=192.168.1.1 SNMP_PORT=161 SNMP_COMMUNITY=public go run cyberpower_exporter.go
+```
 The exporter will start serving metrics on `http://localhost:9100/metrics`.
 
 ## Metrics
@@ -39,35 +50,35 @@ The exporter will start serving metrics on `http://localhost:9100/metrics`.
 This exporter provides the following metrics:
 
 1. `ups_battery_status`: UPS Battery Status
-   - 1: Unknown
-   - 2: Normal
-   - 3: Low
+- 1: Unknown
+- 2: Normal
+- 3: Low
 
 2. `ups_battery_replace_indicator`: UPS Battery Replace Indicator
-   - 1: No
-   - 2: Replace
+- 1: No
+- 2: Replace
 
 3. `ups_input_line_fail_cause`: UPS Input Line Fail Cause
-   - 1: No Transfer
-   - 2: High Voltage
-   - 3: Brown Out
-   - 4: Self Test
+- 1: No Transfer
+- 2: High Voltage
+- 3: Brown Out
+- 4: Self Test
 
 4. `ups_input_status`: UPS Input Status
-   - 1: Normal
-   - 2: Over Voltage
-   - 3: Under Voltage
-   - 4: Frequency Failure
-   - 5: Blackout
+- 1: Normal
+- 2: Over Voltage
+- 3: Under Voltage
+- 4: Frequency Failure
+- 5: Blackout
 
 5. `ups_output_status`: UPS Output Status
-   - 1: Unknown
-   - 2: Online
-   - 3: On Battery
-   - 4: On Boost
-   - 5: On Sleep
-   - 6: Off
-   - 7: Rebooting
+- 1: Unknown
+- 2: Online
+- 3: On Battery
+- 4: On Boost
+- 5: On Sleep
+- 6: Off
+- 7: Rebooting
 
 6. `ups_battery_capacity`: UPS Battery Capacity (percentage)
 
