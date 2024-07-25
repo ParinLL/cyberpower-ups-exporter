@@ -12,6 +12,42 @@ import (
 	"github.com/ParinLL/cyberpower-ups-exporter/logger"
 )
 
+func main() {
+	log, err := logger.Initialize()
+	if err != nil {
+		panic("can't initialize zap logger: " + err.Error())
+	}
+	defer log.Sync()
+
+	config, err := getConfig(log)
+	if err != nil {
+		log.Fatal("Failed to get configuration", zap.Error(err))
+	}
+
+	upsCollector, err := collector.NewUPSCollector(config, log)
+	if err != nil {
+		log.Fatal("Failed to create UPS collector", zap.Error(err))
+	}
+
+	prometheus.MustRegister(upsCollector)
+
+	http.Handle("/metrics", logger.LoggingMiddleware(log, promhttp.Handler()))
+
+	addr := getPort()
+	log.Info("Beginning to serve", zap.String("port", addr))
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		log.Fatal("Error starting HTTP server", zap.Error(err))
+	}
+}
+
+func getPort() string {
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		port = "9100" // default port if not specified
+	}
+	return ":" + port
+}
+
 func getConfig(logger *zap.Logger) (*collector.Config, error) {
 	snmpTarget := os.Getenv("SNMP_TARGET")
 	if snmpTarget == "" {
@@ -36,32 +72,4 @@ func getConfig(logger *zap.Logger) (*collector.Config, error) {
 		SNMPPort:   snmpPort,
 		Community:  community,
 	}, nil
-}
-
-func main() {
-	log, err := logger.Initialize()
-	if err != nil {
-		panic("can't initialize zap logger: " + err.Error())
-	}
-	defer log.Sync()
-
-	config, err := getConfig(log)
-	if err != nil {
-		log.Fatal("Failed to get configuration", zap.Error(err))
-	}
-
-	upsCollector, err := collector.NewUPSCollector(config, log)
-	if err != nil {
-		log.Fatal("Failed to create UPS collector", zap.Error(err))
-	}
-
-	prometheus.MustRegister(upsCollector)
-
-	http.Handle("/metrics", logger.LoggingMiddleware(log, promhttp.Handler()))
-
-	addr := ":9100"
-	log.Info("Beginning to serve on port " + addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		log.Fatal("Error starting HTTP server", zap.Error(err))
-	}
 }

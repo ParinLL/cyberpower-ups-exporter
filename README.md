@@ -34,6 +34,8 @@ Set the following environment variables:
 - `SNMP_TARGET`: IP address of your CyberPower PowerPanel Business server
 - `SNMP_PORT`: SNMP port (default is 161)
 - `SNMP_COMMUNITY`: SNMP community string (default is "public")
+- `SERVER_PORT`: Port on which the exporter will serve metrics (default is 9100)
+
 
 ## Usage
 
@@ -44,13 +46,14 @@ You can run the exporter in two ways:
 export SNMP_TARGET=192.168.1.1
 export SNMP_PORT=161
 export SNMP_COMMUNITY=public
+export SERVER_PORT=9100
 go run cyberpower_exporter.go
 ```
 2. Set environment variables inline:
 ```bash
-SNMP_TARGET=192.168.1.1 SNMP_PORT=161 SNMP_COMMUNITY=public go run cyberpower_exporter.go
+SNMP_TARGET=192.168.1.1 SNMP_PORT=161 SNMP_COMMUNITY=public SERVER_PORT=9100 go run cyberpower_exporter.go
 ```
-The exporter will start serving metrics on `http://localhost:9100/metrics`.
+The exporter will start serving metrics on `http://localhost::<SERVER_PORT>/metrics`.
 
 ## Docker
 

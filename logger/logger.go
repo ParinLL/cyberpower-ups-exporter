@@ -5,11 +5,19 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-// Initialize creates and returns a new zap logger
+// Initialize creates and returns a new zap logger with a human-friendly format
 func Initialize() (*zap.Logger, error) {
-	logger, err := zap.NewProduction()
+	config := zap.NewProductionConfig()
+
+	// Customize the encoding config
+	config.Encoding = "console"
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	logger, err := config.Build()
 	if err != nil {
 		return nil, err
 	}

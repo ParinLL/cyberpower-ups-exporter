@@ -11,4 +11,5 @@ services:
       - SNMP_TARGET=192.168.1.1
       - SNMP_PORT=161
       - SNMP_COMMUNITY=public
+      - SERVER_PORT=9100
     restart: unless-stopped
