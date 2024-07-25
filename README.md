@@ -70,7 +70,7 @@ docker compose up --build
 
 To stop the container:
 ```
-docker-compose down
+docker compose down
 ```
 
 ## Grafana Dashboard
