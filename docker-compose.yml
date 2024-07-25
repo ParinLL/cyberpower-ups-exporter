@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  cyberpower_exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9100:9100"
+    environment:
+      - SNMP_TARGET=192.168.1.1
+      - SNMP_PORT=161
+      - SNMP_COMMUNITY=public
+    restart: unless-stopped

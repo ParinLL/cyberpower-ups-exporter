@@ -2,6 +2,13 @@
 
 This exporter collects SNMP data from CyberPower PowerPanel Business server and exposes it as Prometheus metrics. It's designed to work with CyberPower PowerPanel Business on Linux with SNMPv1 enabled.
 
+## Features
+
+- Collects SNMP data from CyberPower PowerPanel Business server
+- Exposes metrics in Prometheus format
+- Includes a pre-configured Grafana dashboard for easy visualization
+- Docker support for easy deployment
+
 ## Prerequisites
 
 - Go 1.15 or higher
@@ -44,6 +51,64 @@ go run cyberpower_exporter.go
 SNMP_TARGET=192.168.1.1 SNMP_PORT=161 SNMP_COMMUNITY=public go run cyberpower_exporter.go
 ```
 The exporter will start serving metrics on `http://localhost:9100/metrics`.
+
+## Docker
+
+This project includes a Dockerfile for containerization and a docker-compose.yml for easy deployment.
+
+To build and run the container:
+
+1. Adjust the environment variables in docker-compose.yml to match your SNMP configuration.
+2. Run:
+```
+docker-compose up --build
+```
+3. The exporter will be accessible at http://localhost:9100/metrics
+
+To stop the container:
+```
+docker-compose down
+```
+
+## Grafana Dashboard
+
+This project includes a pre-configured Grafana dashboard to visualize the metrics collected by the exporter. To use this dashboard:
+
+1. Ensure you have Grafana installed and configured with your Prometheus data source.
+
+2. Copy the dashboard JSON from the `grafana_dashboard.json` file in this repository.
+
+3. In Grafana, navigate to "Create" > "Import".
+
+4. Paste the JSON into the "Import via panel json" text area.
+
+5. Click "Load".
+
+6. Select your Prometheus data source in the "Prometheus" dropdown.
+
+7. Click "Import".
+
+The dashboard includes the following panels:
+
+- Battery Status: A stat panel showing the current battery status.
+- Battery Capacity: A gauge showing the current battery capacity percentage.
+- Input and Output Voltage: A time series graph showing both input and output voltage over time.
+- Output Load: A time series graph showing the UPS output load over time.
+- Battery Temperature: A gauge showing the current battery temperature.
+- Battery Runtime: A gauge showing the estimated runtime remaining on battery power.
+
+You can further customize this dashboard to suit your specific needs by adding more panels or adjusting the existing ones.
+
+### Updating the Dashboard
+
+If you make changes to the exporter that affect the metrics, you may need to update the dashboard. To do this:
+
+1. Make your changes in the Grafana UI.
+2. Click the "Share dashboard" button (chain link icon) in the top right.
+3. Go to the "Export" tab and select "Export for sharing externally".
+4. Copy the JSON and update the `grafana_dashboard.json` file in this repository.
+
+This will allow others to benefit from your improvements and keep the dashboard in sync with the exporter's capabilities.
 
 ## Metrics
 
