@@ -19,7 +19,7 @@ This exporter collects SNMP data from CyberPower PowerPanel Business server and 
 ## Installation
 
 1. Clone this repository:
-git clone https://github.com/yourusername/cyberpower-ups-exporter.git
+git clone https://github.com/ParinLL/cyberpower-ups-exporter.git
 Copy
 2. Navigate to the project directory:
 cd cyberpower-ups-exporter
