@@ -172,6 +172,10 @@ This exporter provides the following metrics:
 
 17. `ups_environment_sensor_humidity`: UPS Environment Sensor Humidity (percentage)
 
+18. `ups_config_output_voltage`: UPS Configured Output Voltage (volts)
+
+19. `ups_config_output_freq`: UPS Configured Output Frequency (Hz)
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

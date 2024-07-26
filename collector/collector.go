@@ -41,13 +41,42 @@ type UPSCollector struct {
 	inputFrequency               *prometheus.Desc
 	outputFrequency              *prometheus.Desc
 	environmentSensorHumidity    *prometheus.Desc
+	upsBatteryStatus             *prometheus.Desc
+	upsInputLineVoltage          *prometheus.Desc
+	upsOutputPercentLoad         *prometheus.Desc
+	upsConfigOutputVoltage       *prometheus.Desc
+	upsConfigOutputFreq          *prometheus.Desc
 }
 
 func NewUPSCollector(config *Config, logger *zap.Logger) (*UPSCollector, error) {
 	return &UPSCollector{
 		config: config,
 		logger: logger,
-
+		upsBatteryStatus: prometheus.NewDesc(
+			"ups_battery_status",
+			"The present battery status",
+			nil, nil,
+		),
+		upsInputLineVoltage: prometheus.NewDesc(
+			"ups_input_line_voltage",
+			"The magnitude of the present input voltage",
+			nil, nil,
+		),
+		upsOutputPercentLoad: prometheus.NewDesc(
+			"ups_output_percent_load",
+			"The percentage of the UPS power capacity presently being used",
+			nil, nil,
+		),
+		upsConfigOutputVoltage: prometheus.NewDesc(
+			"ups_config_output_voltage",
+			"The nominal output voltage",
+			nil, nil,
+		),
+		upsConfigOutputFreq: prometheus.NewDesc(
+			"ups_config_output_freq",
+			"The nominal output frequency",
+			nil, nil,
+		),
 		batteryStatus: prometheus.NewDesc(
 			"ups_battery_status",
 			"UPS Battery Status",
@@ -221,6 +250,16 @@ func (c *UPSCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		switch variable.Name {
+		case ".1.3.6.1.2.1.33.1.2.1.0":
+			ch <- prometheus.MustNewConstMetric(c.upsBatteryStatus, prometheus.GaugeValue, value)
+		case ".1.3.6.1.2.1.33.1.3.3.1.2.1":
+			ch <- prometheus.MustNewConstMetric(c.upsInputLineVoltage, prometheus.GaugeValue, value/10)
+		case ".1.3.6.1.2.1.33.1.4.4.1.5.1":
+			ch <- prometheus.MustNewConstMetric(c.upsOutputPercentLoad, prometheus.GaugeValue, value)
+		case ".1.3.6.1.2.1.33.1.9.9.0":
+			ch <- prometheus.MustNewConstMetric(c.upsConfigOutputVoltage, prometheus.GaugeValue, value/10)
+		case ".1.3.6.1.2.1.33.1.9.10.0":
+			ch <- prometheus.MustNewConstMetric(c.upsConfigOutputFreq, prometheus.GaugeValue, value/10)
 		case ".1.3.6.1.4.1.3808.1.1.1.2.1.1.0":
 			ch <- prometheus.MustNewConstMetric(c.batteryStatus, prometheus.GaugeValue, value)
 		case ".1.3.6.1.4.1.3808.1.1.1.2.2.5.0":
