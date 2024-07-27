@@ -102,7 +102,9 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "ups_battery_status",
+          "editorMode": "code",
+          "expr": "ups_battery_status{snmp_target=\"$SNMP_Target\"}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -205,7 +207,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ups_output_source",
+          "expr": "ups_output_source{snmp_target=\"$SNMP_Target\"}",
           "range": true,
           "refId": "A"
         }
@@ -270,7 +272,9 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "ups_battery_voltage",
+          "editorMode": "code",
+          "expr": "ups_battery_voltage{snmp_target=\"$SNMP_Target\"}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -334,7 +338,9 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "ups_output_frequency",
+          "editorMode": "code",
+          "expr": "ups_output_frequency{snmp_target=\"$SNMP_Target\"}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -429,7 +435,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "ups_output_percent_load*10",
+          "expr": "ups_output_percent_load{snmp_target=\"$SNMP_Target\"}*10",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -528,7 +534,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ups_output_percent_load",
+          "expr": "ups_output_percent_load{snmp_target=\"$SNMP_Target\"}",
           "legendFormat": "{{label_name}}",
           "range": true,
           "refId": "A"
@@ -623,7 +629,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ups_input_voltage",
+          "expr": "ups_input_voltage{snmp_target=\"$SNMP_Target\"}",
           "legendFormat": "Input Voltage",
           "range": true,
           "refId": "A"
@@ -634,7 +640,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ups_output_voltage",
+          "expr": "ups_output_voltage{snmp_target=\"$SNMP_Target\"}",
           "legendFormat": "Output Voltage",
           "range": true,
           "refId": "B"
@@ -710,7 +716,9 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "ups_estimated_charge_remaining",
+          "editorMode": "code",
+          "expr": "ups_estimated_charge_remaining{snmp_target=\"$SNMP_Target\"}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -775,7 +783,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ups_output_current",
+          "expr": "ups_output_current{snmp_target=\"$SNMP_Target\"}",
           "range": true,
           "refId": "A"
         }
@@ -848,7 +856,9 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "ups_estimated_minutes_remaining",
+          "editorMode": "code",
+          "expr": "ups_estimated_minutes_remaining{snmp_target=\"$SNMP_Target\"}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -879,17 +889,41 @@
         "regex": "",
         "skipUrlSync": false,
         "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "10.28.0.50",
+          "value": "10.28.0.50"
+        },
+        "definition": "label_values(ups_battery_status,snmp_target)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "SNMP_Target",
+        "multi": false,
+        "name": "SNMP_Target",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(ups_battery_status,snmp_target)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "CyberPower UPS Dashboard",
   "uid": "cyberpower_ups",
-  "version": 1,
+  "version": 13,
   "weekStart": ""
 }
