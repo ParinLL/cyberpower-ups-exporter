@@ -94,11 +94,13 @@ This project includes a pre-configured Grafana dashboard to visualize the metric
 The dashboard includes the following panels:
 
 - Battery Status: A stat panel showing the current battery status.
-- Battery Capacity: A gauge showing the current battery capacity percentage.
+- Battery Charge Remaining: A gauge showing the current battery charge percentage.
 - Input and Output Voltage: A time series graph showing both input and output voltage over time.
-- Output Load: A time series graph showing the UPS output load over time.
-- Battery Temperature: A gauge showing the current battery temperature.
-- Battery Runtime: A gauge showing the estimated runtime remaining on battery power.
+- Output Load: A time series graph showing the UPS output load percentage over time.
+- Battery Voltage: A gauge showing the current battery voltage.
+- Estimated Minutes Remaining: A gauge showing the estimated runtime remaining on battery power.
+- Output Current: A gauge showing the current output current.
+- Output Frequency: A gauge showing the current output frequency.
 
 You can further customize this dashboard to suit your specific needs by adding more panels or adjusting the existing ones.
 
@@ -117,64 +119,34 @@ This will allow others to benefit from your improvements and keep the dashboard 
 
 This exporter provides the following metrics:
 
-1. `ups_battery_status`: UPS Battery Status
-- 1: Unknown
-- 2: Normal
-- 3: Low
+1. ups_battery_status: UPS Battery Status
 
-2. `ups_battery_replace_indicator`: UPS Battery Replace Indicator
-- 1: No
-- 2: Replace
+    1: Unknown
+    2: Normal
+    3: Low
+    4: Depleted
 
-3. `ups_input_line_fail_cause`: UPS Input Line Fail Cause
-- 1: No Transfer
-- 2: High Voltage
-- 3: Brown Out
-- 4: Self Test
 
-4. `ups_input_status`: UPS Input Status
-- 1: Normal
-- 2: Over Voltage
-- 3: Under Voltage
-- 4: Frequency Failure
-- 5: Blackout
+2. ups_seconds_on_battery: Time on battery in seconds
+3. ups_estimated_minutes_remaining: Estimated battery runtime remaining in minutes
+4. ups_estimated_charge_remaining: Estimated battery charge remaining in percent
+5. ups_battery_voltage: Battery voltage in 0.1 Volt DC
+6. ups_input_frequency: Input frequency in 0.1 Hertz
+7. ups_input_voltage: Input voltage in RMS Volts
+8. ups_output_source: Current source of output power
 
-5. `ups_output_status`: UPS Output Status
-- 1: Unknown
-- 2: Online
-- 3: On Battery
-- 4: On Boost
-- 5: On Sleep
-- 6: Off
-- 7: Rebooting
-
-6. `ups_battery_capacity`: UPS Battery Capacity (percentage)
-
-7. `ups_output_current`: UPS Output Current (amperes)
-
-8. `ups_battery_voltage`: UPS Battery Voltage (volts)
-
-9. `ups_input_line_voltage`: UPS Input Line Voltage (volts)
-
-10. `ups_output_voltage`: UPS Output Voltage (volts)
-
-11. `ups_output_load`: UPS Output Load (percentage)
-
-12. `ups_battery_temperature`: UPS Battery Temperature (degrees Celsius)
-
-13. `ups_environment_sensor_temperature`: UPS Environment Sensor Temperature (degrees Celsius)
-
-14. `ups_battery_runtime`: UPS Battery Runtime (minutes)
-
-15. `ups_input_frequency`: UPS Input Frequency (Hz)
-
-16. `ups_output_frequency`: UPS Output Frequency (Hz)
-
-17. `ups_environment_sensor_humidity`: UPS Environment Sensor Humidity (percentage)
-
-18. `ups_config_output_voltage`: UPS Configured Output Voltage (volts)
-
-19. `ups_config_output_freq`: UPS Configured Output Frequency (Hz)
+    1: Other
+    2: None
+    3: Normal
+    4: Bypass
+    5: Battery
+    6: Booster
+    7: Reducer
+9. ups_output_frequency: Output frequency in 0.1 Hertz
+10. ups_output_voltage: Output voltage in RMS Volts
+11. ups_output_current: Output current in 0.1 RMS Amp
+12. ups_output_power: Output power in Watts
+13. ups_output_percent_load: Percentage of the UPS power capacity presently being used
 
 ## Contributing
 
