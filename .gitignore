@@ -50,3 +50,12 @@ Thumbs.db
 
 # Temporary files
 *.tmp
+
+# Docker
+.docker
+
+# Kubernetes
+.kubernetes
+
+# Build
+/cyberpower_exporter
