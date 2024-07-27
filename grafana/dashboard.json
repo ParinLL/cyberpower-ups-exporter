@@ -278,7 +278,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 28
               }
             ]
           },
@@ -294,9 +294,11 @@
       },
       "id": 5,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -304,9 +306,9 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
       "pluginVersion": "11.1.0",
       "targets": [
@@ -322,7 +324,7 @@
         }
       ],
       "title": "Battery Voltage",
-      "type": "gauge"
+      "type": "stat"
     },
     {
       "datasource": {
@@ -360,9 +362,11 @@
       },
       "id": 8,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -370,9 +374,9 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
       "pluginVersion": "11.1.0",
       "targets": [
@@ -388,7 +392,7 @@
         }
       ],
       "title": "Output Frequency",
-      "type": "gauge"
+      "type": "stat"
     },
     {
       "datasource": {
@@ -564,10 +568,14 @@
       "id": 4,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
+          "calcs": [
+            "min",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -582,7 +590,7 @@
           },
           "editorMode": "code",
           "expr": "ups_output_percent_load{snmp_target=\"$SNMP_Target\"}",
-          "legendFormat": "{{label_name}}",
+          "legendFormat": "load",
           "range": true,
           "refId": "A"
         }
@@ -964,13 +972,13 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "CyberPower UPS Dashboard",
   "uid": "cyberpower_ups",
-  "version": 18,
+  "version": 20,
   "weekStart": ""
 }
