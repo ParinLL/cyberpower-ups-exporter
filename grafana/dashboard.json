@@ -414,7 +414,7 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": false
         },
         "tooltip": {
           "mode": "single",
@@ -514,7 +514,7 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": false
         },
         "tooltip": {
           "mode": "single",
@@ -527,7 +527,10 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
+          "editorMode": "code",
           "expr": "ups_output_percent_load",
+          "legendFormat": "{{label_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -880,13 +883,13 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "CyberPower UPS Dashboard",
   "uid": "cyberpower_ups",
-  "version": 11,
+  "version": 1,
   "weekStart": ""
 }

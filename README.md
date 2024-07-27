@@ -1,6 +1,8 @@
 # CyberPower UPS SNMP Exporter for Prometheus
 
-This exporter collects SNMP data from CyberPower PowerPanel Business server and exposes it as Prometheus metrics. It's designed to work with CyberPower PowerPanel Business on Linux with SNMPv1 enabled.
+This exporter collects SNMP data from  [CyberPower PowerPanel Business for Linx](https://www.cyberpowersystems.com/product/software/power-panel-business/powerpanel-business-linux/). and exposes it as Prometheus metrics. It's designed to work with CyberPower PowerPanel Business on Linux with SNMPv1 enabled.
+
+![Dashboard](grafana/dashboard.png)
 
 ## Features
 

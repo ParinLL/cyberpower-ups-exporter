@@ -46,71 +46,70 @@ func NewUPSCollector(config *Config, logger *zap.Logger) (*UPSCollector, error) 
 		upsBatteryStatus: prometheus.NewDesc(
 			"ups_battery_status",
 			"The current battery status",
-			nil, nil,
+			[]string{"snmp_target"}, nil,
 		),
 		upsSecondsOnBattery: prometheus.NewDesc(
 			"ups_seconds_on_battery",
 			"The number of seconds on battery power",
-			nil, nil,
+			[]string{"snmp_target"}, nil,
 		),
 		upsEstimatedMinutesRemaining: prometheus.NewDesc(
 			"ups_estimated_minutes_remaining",
 			"The estimated minutes of battery runtime remaining",
-			nil, nil,
+			[]string{"snmp_target"}, nil,
 		),
 		upsEstimatedChargeRemaining: prometheus.NewDesc(
 			"ups_estimated_charge_remaining",
 			"The estimated battery charge remaining in percent",
-			nil, nil,
+			[]string{"snmp_target"}, nil,
 		),
 		upsBatteryVoltage: prometheus.NewDesc(
 			"ups_battery_voltage",
 			"The current battery voltage in 0.1 Volt DC",
-			nil, nil,
+			[]string{"snmp_target"}, nil,
 		),
 		upsInputFrequency: prometheus.NewDesc(
 			"ups_input_frequency",
 			"The current input frequency in 0.1 Hertz",
-			nil, nil,
+			[]string{"snmp_target"}, nil,
 		),
 		upsInputVoltage: prometheus.NewDesc(
 			"ups_input_voltage",
-			"The current input voltage in RMS Volts",
-			nil, nil,
+			"The current input voltage in Volt AC",
+			[]string{"snmp_target"}, nil,
 		),
 		upsOutputSource: prometheus.NewDesc(
 			"ups_output_source",
-			"The current source of output power",
-			nil, nil,
+			"The current output source",
+			[]string{"snmp_target"}, nil,
 		),
 		upsOutputFrequency: prometheus.NewDesc(
 			"ups_output_frequency",
 			"The current output frequency in 0.1 Hertz",
-			nil, nil,
+			[]string{"snmp_target"}, nil,
 		),
 		upsOutputVoltage: prometheus.NewDesc(
 			"ups_output_voltage",
-			"The current output voltage in RMS Volts",
-			nil, nil,
+			"The current output voltage in Volt AC",
+			[]string{"snmp_target"}, nil,
 		),
 		upsOutputCurrent: prometheus.NewDesc(
 			"ups_output_current",
-			"The current output current in 0.1 RMS Amp",
-			nil, nil,
+			"The current output current in 0.1 Ampere",
+			[]string{"snmp_target"}, nil,
 		),
 		upsOutputPower: prometheus.NewDesc(
 			"ups_output_power",
-			"The current output power in Watts",
-			nil, nil,
+			"The current output power in Watt",
+			[]string{"snmp_target"}, nil,
 		),
 		upsOutputPercentLoad: prometheus.NewDesc(
 			"ups_output_percent_load",
-			"The percentage of the UPS power capacity presently being used",
-			nil, nil,
+			"The current output load in percent",
+			[]string{"snmp_target"}, nil,
 		),
 	}, nil
 }
-
 func (c *UPSCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.upsBatteryStatus
 	ch <- c.upsSecondsOnBattery
@@ -175,6 +174,7 @@ func (c *UPSCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
+	snmpTarget := c.config.SNMPTarget
 	for _, variable := range result.Variables {
 		var value float64
 		switch variable.Type {
@@ -190,31 +190,31 @@ func (c *UPSCollector) Collect(ch chan<- prometheus.Metric) {
 
 		switch variable.Name {
 		case ".1.3.6.1.2.1.33.1.2.1.0":
-			ch <- prometheus.MustNewConstMetric(c.upsBatteryStatus, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsBatteryStatus, prometheus.GaugeValue, value, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.2.2.0":
-			ch <- prometheus.MustNewConstMetric(c.upsSecondsOnBattery, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsSecondsOnBattery, prometheus.GaugeValue, value, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.2.3.0":
-			ch <- prometheus.MustNewConstMetric(c.upsEstimatedMinutesRemaining, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsEstimatedMinutesRemaining, prometheus.GaugeValue, value, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.2.4.0":
-			ch <- prometheus.MustNewConstMetric(c.upsEstimatedChargeRemaining, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsEstimatedChargeRemaining, prometheus.GaugeValue, value, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.2.5.0":
-			ch <- prometheus.MustNewConstMetric(c.upsBatteryVoltage, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.upsBatteryVoltage, prometheus.GaugeValue, value/10, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.3.3.1.2.1":
-			ch <- prometheus.MustNewConstMetric(c.upsInputFrequency, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.upsInputFrequency, prometheus.GaugeValue, value/10, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.3.3.1.3.1":
-			ch <- prometheus.MustNewConstMetric(c.upsInputVoltage, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsInputVoltage, prometheus.GaugeValue, value, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.4.1.0":
-			ch <- prometheus.MustNewConstMetric(c.upsOutputSource, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsOutputSource, prometheus.GaugeValue, value, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.4.2.0":
-			ch <- prometheus.MustNewConstMetric(c.upsOutputFrequency, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.upsOutputFrequency, prometheus.GaugeValue, value/10, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.4.4.1.2.1":
-			ch <- prometheus.MustNewConstMetric(c.upsOutputVoltage, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsOutputVoltage, prometheus.GaugeValue, value, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.4.4.1.3.1":
-			ch <- prometheus.MustNewConstMetric(c.upsOutputCurrent, prometheus.GaugeValue, value/10)
+			ch <- prometheus.MustNewConstMetric(c.upsOutputCurrent, prometheus.GaugeValue, value/10, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.4.4.1.4.1":
-			ch <- prometheus.MustNewConstMetric(c.upsOutputPower, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsOutputPower, prometheus.GaugeValue, value, snmpTarget)
 		case ".1.3.6.1.2.1.33.1.4.4.1.5.1":
-			ch <- prometheus.MustNewConstMetric(c.upsOutputPercentLoad, prometheus.GaugeValue, value)
+			ch <- prometheus.MustNewConstMetric(c.upsOutputPercentLoad, prometheus.GaugeValue, value, snmpTarget)
 		}
 	}
 
