@@ -148,6 +148,16 @@ This exporter provides the following metrics:
 12. ups_output_power: Output power in Watts
 13. ups_output_percent_load: Percentage of the UPS power capacity presently being used
 
+## References
+
+- [CyberPower PowerPanel Business for Linux](https://www.cyberpowersystems.com/product/software/power-panel-business/powerpanel-business-linux/): The software used to manage CyberPower UPS devices.
+
+- [LibreNMS UPS-MIB](https://github.com/librenms/librenms/blob/master/mibs/UPS-MIB): The standard UPS MIB used as a reference for this exporter.
+
+- [CyberPower MIB Files](https://www.cyberpowersystems.com/products/software/mib-files/): Official MIB files provided by CyberPower Systems.
+
+This exporter uses the standard UPS-MIB as defined in RFC 1628, which is compatible with most UPS devices. The CyberPower-specific MIB files are not directly used in this exporter but can be helpful for understanding additional CyberPower-specific OIDs if you need to extend the exporter's functionality.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
